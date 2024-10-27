@@ -149,6 +149,124 @@ data$immigration <- data$immigration / 4
 table(data$immigration)
 ```
 
+### Abortion
+```{r}
+#Initialize to 0
+data$abortion <- 0
+
+#A: Always allow a woman to obtain an abortion
+data <- data %>%
+  mutate(abortion = if_else(CC22_332a == 1, abortion + 1, abortion))
+
+#B: Permit only in case of rape, incest, danger to mother
+data <- data %>%
+  mutate(abortion = if_else(CC22_332b == 2, abortion + 1, abortion))
+
+#C: Prohibit after 20th week
+data <- data %>%
+  mutate(abortion = if_else(CC22_332c == 2, abortion + 1, abortion))
+
+#D: Allow employers to decline coverage
+data <- data %>%
+  mutate(abortion = if_else(CC22_332d == 2, abortion + 1, abortion))
+
+#E: Prohibit federal funding
+data <- data %>%
+  mutate(abortion = if_else(CC22_332e == 2, abortion + 1, abortion))
+
+#F: Always illegal
+data <- data %>%
+  mutate(abortion = if_else(CC22_332f == 2, abortion + 1, abortion))
+
+data$abortion <- data$abortion / 6
+
+table(data$abortion)
+```
+
+### Climate
+```{r}
+#Initialize to 0
+data$climate <- 0
+
+# From what you know about global climate change or global warming, which one of
+# the following statements comes closest to your opinion?
+# 1: Global climate change has been established as a serious problem, and
+# immediate action is necessary
+# 2: There is enough evidence that climate change is taking place and some action 
+# should be taken 
+# 3: We don't know enough about global climate change, and more research is 
+# necessary before we take any actions
+# 4: Concern about global climate change is exaggerated. No action is necessary
+# 5:  Global climate change is not occurring; this is not a real issue
+data <- data %>%
+  mutate(climate = if_else(CC22_333 %in% c(1,2), climate + 1, climate))
+
+# A: Give EPA regulatory power
+data <- data %>%
+  mutate(climate = if_else(CC22_333a == 1, climate + 1, climate))
+
+# B: Set minimum renewable energy
+data <- data %>%
+  mutate(climate = if_else(CC22_333b == 1, climate + 1, climate))
+
+# C: Strengthen Clean Energy Act
+data <- data %>%
+  mutate(climate = if_else(CC22_333c == 1, climate + 1, climate))
+
+# D: Set new fuel efficiency standards
+data <- data %>%
+  mutate(climate = if_else(CC22_333d == 1, climate + 1, climate))
+
+# E: Increase fossil fuel production
+data <- data %>%
+  mutate(climate = if_else(CC22_333e == 2, climate + 1, climate))
+
+data$climate <- data$climate / 6
+
+table(data$climate)
+```
+### Policing
+```{r}
+#Initialize to 0
+data$crime <- 0
+
+#A: Eliminate mandatory minimums
+data <- data %>%
+  mutate(crime = if_else(CC22_334a == 1, crime + 1, crime))
+
+#B: Require body cams at all times
+data <- data %>%
+  mutate(crime = if_else(CC22_334b == 1, crime + 1, crime))
+
+#C: Increase police on the street by 10%
+data <- data %>%
+  mutate(crime = if_else(CC22_334c == 2, crime + 1, crime))
+
+#D: Decrease police on the street by 10%
+data <- data %>%
+  mutate(crime = if_else(CC22_334d == 1, crime + 1, crime))
+
+#E: Ban chokeholds
+data <- data %>%
+  mutate(crime = if_else(CC22_334e == 1, crime + 1, crime))
+
+#F: Create bad cop registry
+data <- data %>%
+  mutate(crime = if_else(CC22_334f == 1, crime + 1, crime))
+
+#G: Stop giving cops surplus weapons
+data <- data %>%
+  mutate(crime = if_else(CC22_334g == 1, crime + 1, crime))
+
+#H: Allow people to sue police
+data <- data %>%
+  mutate(crime = if_else(CC22_334h == 1, crime + 1, crime))
+
+data$crime <- data$crime / 8
+
+table(data$crime)
+```
+
 #Create model
 ##Weigh by issue significance at the time
 Find a Gallup poll or something from 2022 to see what people cared about.
