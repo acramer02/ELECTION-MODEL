@@ -66,6 +66,31 @@ data <- data[, c("gender4", "educ", "race", "votereg", "pid7",
 ## Create issue scales
 Percent of questions on each issue dimension where choose liberal view
 
+```{r}
+# Initialize to 0
+data$health <- 0
+#A: Expand Medicare
+data <- data %>%
+  mutate(health = if_else(CC22_327a == 1, health + 1, health))
+
+#B: Government negotiate lower prices
+data <- data %>%
+  mutate(health = if_else(CC22_327b == 1, health + 1, health))
+
+#C: Repeal Obamacare
+data <- data %>%
+  mutate(health = if_else(CC22_327c == 2, health + 1, health))
+
+#D: Import prescriptions
+data <- data %>%
+  mutate(health = if_else(CC22_327d == 1, health + 1, health))
+
+#Average
+data$health <- data$health / 4.0
+
+table(data$health)
+```
+
 #Create model
 ##Weigh by issue significance at the time
 Find a Gallup poll or something from 2022 to see what people cared about.
