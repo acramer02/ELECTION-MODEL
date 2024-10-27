@@ -13,11 +13,11 @@ library(lubridate)
 library(readr)
 ```
 
-#NOT DOING THIS NOW, BUT JUST WANTED TO KEEP IN CASE 
+# NOT DOING THIS NOW, BUT JUST WANTED TO KEEP IN CASE 
 ```{r}
 # SEE ABOVE!!!
-#data <- read.csv("~/Desktop/predictions.csv")
-#colnames(data)
+# data <- read.csv("~/Desktop/predictions.csv")
+# colnames(data)
 # file:///Users/andrewcramer/Downloads/31120080_qre.pdf (SEE 314) ((p45-47, 57))
 #Q15: Registered voter
 #Q19: Senator vote
@@ -62,11 +62,11 @@ data <- data[, c("gender4", "educ", "race", "votereg", "pid7",
 
 
 ```
-#Clean up dataset
+# Clean up dataset
 ## Create issue scales
 Percent of questions on each issue dimension where choose liberal view
 
-###Healthcare
+### Healthcare
 ```{r}
 # Initialize to 0
 data$health <- 0
@@ -91,7 +91,7 @@ data$health <- data$health / 4.0
 
 table(data$health)
 ```
-###Gun control
+### Gun control
 ```{r}
 # Initialize to 0
 data$guns <- 0
@@ -124,7 +124,7 @@ data$guns <- data$guns / 6
 table(data$guns)
 ```
 
-###Immigration
+### Immigration
 ```{r}
 #Initialize to 0
 data$immigration <- 0
