@@ -39,7 +39,7 @@ library(readr)
 data <- read.csv("~/Desktop/CCES22_Common_OUTPUT_vv_small.csv")
 #CC22_327grid: Healthcare
 #CC22_330grid: Guns
-#CC22_331grid: Immigrations
+#CC22_331grid: Immigration
 #CC22_332grid: Abortion
 #CC22_333: Climate
 #CC22_333grid: Environment
@@ -66,6 +66,7 @@ data <- data[, c("gender4", "educ", "race", "votereg", "pid7",
 ## Create issue scales
 Percent of questions on each issue dimension where choose liberal view
 
+###Healthcare
 ```{r}
 # Initialize to 0
 data$health <- 0
@@ -89,6 +90,63 @@ data <- data %>%
 data$health <- data$health / 4.0
 
 table(data$health)
+```
+###Gun control
+```{r}
+# Initialize to 0
+data$guns <- 0
+#A: Prohibit state from publishing gun registry
+data <- data %>%
+  mutate(guns = if_else(CC22_330a == 2, guns + 1, guns))
+
+#B: Ban assault rifles
+data <- data %>%
+  mutate(guns = if_else(CC22_330b == 1, guns + 1, guns))
+
+#C: Easier to obtain concealed-carry permit
+data <- data %>%
+  mutate(guns = if_else(CC22_330c == 2, guns + 1, guns))
+
+#D: Funding to encourage states to take guns away from self-threats
+data <- data %>%
+  mutate(guns = if_else(CC22_330d == 1, guns + 1, guns))
+
+#E: Juevenile/mental health background checks
+data <- data %>%
+  mutate(guns = if_else(CC22_330e == 1, guns + 1, guns))
+
+#F: Give teachers guns
+data <- data %>%
+  mutate(guns = if_else(CC22_330f == 2, guns + 1, guns))
+
+data$guns <- data$guns / 6
+
+table(data$guns)
+```
+
+###Immigration
+```{r}
+#Initialize to 0
+data$immigration <- 0
+
+#A: Grant legal status if job + taxes for 3+ years
+data <- data %>%
+  mutate(immigration = if_else(CC22_331a == 1, immigration + 1, immigration))
+
+#B: Increase border patrol agents
+data <- data %>%
+  mutate(immigration = if_else(CC22_331b == 2, immigration + 1, immigration))
+
+#C: Reduce by 50%
+data <- data %>%
+  mutate(immigration = if_else(CC22_331c == 2, immigration + 1, immigration))
+
+#D: Increase spending by $25 bil + wall
+data <- data %>%
+  mutate(immigration = if_else(CC22_331d == 2, immigration + 1, immigration))
+
+data$immigration <- data$immigration / 4
+table(data$immigration)
 ```
 
 #Create model
