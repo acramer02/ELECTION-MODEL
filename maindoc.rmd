@@ -1,0 +1,78 @@
+---
+title: "Predictions"
+output: html_document
+date: "2024-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stats)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(readr)
+```
+
+#NOT DOING THIS NOW, BUT JUST WANTED TO KEEP IN CASE 
+```{r}
+# SEE ABOVE!!!
+#data <- read.csv("~/Desktop/predictions.csv")
+#colnames(data)
+# file:///Users/andrewcramer/Downloads/31120080_qre.pdf (SEE 314) ((p45-47, 57))
+#Q15: Registered voter
+#Q19: Senator vote
+#Q20: Governor vote
+#Q41: Increasing income taxes on people making over one million dollars per years
+#Q42: Require background checks for gun purchases at gun shows or other private sales.
+#Q49: Increase govt regulation of businesses that produce a great deal of greenhouse emissions linked to climate change
+#Q72: Abortion view
+#Q74: Concern that immigration poses a threat to the United States
+#KS4: Over the past few years, Black Americans have gotten less than they deserve
+#Q85 (p69): Highest level of school 
+#Q86: Annual income
+#Q87: Party
+```
+
+# [CES2022 data](https://gdcc.github.io/dataverse-previewers/previewers/v1.4/PDFPreview.html?callback=aHR0cHM6Ly9kYXRhdmVyc2UuaGFydmFyZC5lZHUvYXBpL3YxL2ZpbGVzLzczNTkyNTQvbWV0YWRhdGEvMTAzODA2ODcvdG9vbHBhcmFtcy84MA==&locale=en)
+
+```{r}
+data <- read.csv("~/Desktop/CCES22_Common_OUTPUT_vv_small.csv")
+#CC22_327grid: Healthcare
+#CC22_330grid: Guns
+#CC22_331grid: Immigrations
+#CC22_332grid: Abortion
+#CC22_333: Climate
+#CC22_333grid: Environment
+#CC22_334grid: Policing policies
+#pid7
+
+data <- data[, c("gender4", "educ", "race", "votereg", "pid7", 
+                 "CC22_327a", "CC22_327b", "CC22_327c", "CC22_327d",
+                 "CC22_330a", "CC22_330b", "CC22_330c", "CC22_330d", 
+                 "CC22_330e", "CC22_330f", "CC22_331a", "CC22_331b",          
+                 "CC22_331c", "CC22_331d", "CC22_332a", "CC22_332b", 
+                 "CC22_332c", "CC22_332d", "CC22_332e", "CC22_332f", 
+                 "CC22_333", "CC22_333a", "CC22_333b", "CC22_333c",          
+                 "CC22_333d", "CC22_333e", "CC22_334a", "CC22_334b", 
+                 "CC22_334c", "CC22_334d", "CC22_334e", "CC22_334f", 
+                 "CC22_334g", "CC22_334h", "CC22_340a", "CC22_340b",
+                 "CC22_340c", "CC22_340d", "CC22_340e", "CC22_340f", 
+                 "CC22_340g", "CC22_340h", "CC22_340i", "CC22_340j", 
+                 "CC22_340k", "CC22_340l", "CC22_340m", "CC22_340n")]
+
+
+```
+#Clean up dataset
+## Create issue scales
+Percent of questions on each issue dimension where choose liberal view
+
+#Create model
+##Weigh by issue significance at the time
+Find a Gallup poll or something from 2022 to see what people cared about.
+Modeling for Dem Vote Share.
+TBD exact weighting process.
+
+
+# Blend with a fundamentals model
+Use economy and approval rate. Figure out appropriate weighting
+
