@@ -267,6 +267,65 @@ data$crime <- data$crime / 8
 table(data$crime)
 ```
 
+### Other Important Demographics
+```{r}
+data <- data %>%
+  # Gender
+  mutate(gender = case_when(
+    gender4 == 1 ~ "Male",
+    gender4 == 2 ~ "Feale",
+    gender4 == 3 ~ "Non-binary",
+    gender4 == 4 ~ "Other"
+  )) %>%
+  # Education
+  mutate(edu = case_when(
+    educ == 1 ~ "No HS",
+    educ == 2 ~ "HS grad",
+    educ == 3 ~ "Some college",
+    educ == 4 ~ "2yr",
+    educ == 5 ~ "4yr",
+    educ == 6 ~ "Post-grad"
+  )) %>%
+  # Race
+  mutate(race = case_when(
+    race == 1 ~ "White",
+    race == 2 ~ "Black",
+    race == 3 ~ "Hispanic",
+    race == 4 ~ "Asian",
+    race == 5 ~ "Native American",
+    race == 6 ~ "Middle Eastern",
+    race == 7 ~ "Multiracial",
+    race == 8 ~ "Other"
+  )) %>%
+  # Party
+  mutate(party = case_when(
+    pid3 == 1 ~ "Democrat",
+    pid3 == 2 ~ "Republican",
+    pid3 == 3 ~ "Independent",
+    pid3 %in% c(4,5) ~ "Other"
+  ))
+
+data <- data %>%
+  # Convert presidential approval to binary
+  mutate(approval = if_else(CC22_320a %in% c(1,2), 1,0)) %>%
+  # Similar for approval of economy
+  mutate(economy = case_when(
+    CC22_302 %in% c(1,2) ~ 1,
+    CC22_302 == 3 ~ 0,
+    CC22_302 %in% c(4,5) ~ -1,
+  )) %>%
+  mutate(voted_D = if_else(presvote20post == 1, 1, 0))
+```
+
+### Limit model to relevant columns and only registered voters
+```{r}
+#colnames(data)
+data <- data[data$votereg == 1, 57:68]
+summary(lm(voted_D ~ approval + economy + party + edu + gender + health, + guns +
+             immigration + abortion + climate + crime,
+           data = data))
+```
+
 #Create model
 ##Weigh by issue significance at the time
 Find a Gallup poll or something from 2022 to see what people cared about.
