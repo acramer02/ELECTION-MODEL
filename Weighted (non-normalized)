@@ -1,0 +1,458 @@
+---
+title: "Predictions"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(stats)
+library(ggplot2)
+library(dplyr)
+library(lubridate)
+library(readr)
+```
+
+# NOT DOING THIS NOW, BUT JUST WANTED TO KEEP IN CASE 
+```{r}
+# SEE ABOVE!!!
+#data <- read.csv("~/Desktop/predictions.csv")
+#colnames(data)
+# file:///Users/andrewcramer/Downloads/31120080_qre.pdf (SEE 314) ((p45-47, 57))
+#Q15: Registered voter
+#Q19: Senator vote
+#Q20: Governor vote
+#Q41: Increasing income taxes on people making over one million dollars per years
+#Q42: Require background checks for gun purchases at gun shows or other private sales.
+#Q49: Increase govt regulation of businesses that produce a great deal of greenhouse emissions linked to climate change
+#Q72: Abortion view
+#Q74: Concern that immigration poses a threat to the United States
+#KS4: Over the past few years, Black Americans have gotten less than they deserve
+#Q85 (p69): Highest level of school 
+#Q86: Annual income
+#Q87: Party
+```
+
+# [CES2022 data](https://gdcc.github.io/dataverse-previewers/previewers/v1.4/PDFPreview.html?callback=aHR0cHM6Ly9kYXRhdmVyc2UuaGFydmFyZC5lZHUvYXBpL3YxL2ZpbGVzLzczNTkyNTQvbWV0YWRhdGEvMTAzODA2ODcvdG9vbHBhcmFtcy84MA==&locale=en)
+
+```{r}
+data <- read.csv("~/Desktop/CCES22_Common_OUTPUT_vv_small.csv")
+#CC22_327grid: Healthcare
+#CC22_330grid: Guns
+#CC22_331grid: Immigration
+#CC22_332grid: Abortion
+#CC22_333: Climate
+#CC22_333grid: Environment
+#CC22_334grid: Policing policies
+#pid3
+# CC_20_320a is Presidential approval
+#CC22_302 is economy trend over past year
+colnames(data)
+# Select relevant columns
+data <- data[, c("gender4", "educ", "race", "votereg", "pid3", 
+                 "CC22_327a", "CC22_327b", "CC22_327c", "CC22_327d",
+                 "CC22_330a", "CC22_330b", "CC22_330c", "CC22_330d", 
+                 "CC22_330e", "CC22_330f", "CC22_331a", "CC22_331b",  
+                 "CC22_331c", "CC22_331d", "CC22_332a", "CC22_332b", 
+                 "CC22_332c", "CC22_332d", "CC22_332e", "CC22_332f", 
+                 "CC22_333", "CC22_333a", "CC22_333b", "CC22_333c",   
+                 "CC22_333d", "CC22_333e", "CC22_334a", "CC22_334b", 
+                 "CC22_334c", "CC22_334d", "CC22_334e", "CC22_334f", 
+                 "CC22_334g", "CC22_334h", "CC22_340a", "CC22_340b",
+                 "CC22_340c", "CC22_340d", "CC22_340e", "CC22_340f", 
+                 "CC22_340g", "CC22_340h", "CC22_340i", "CC22_340j", 
+                 "CC22_340k", "CC22_340l", "CC22_340m", "CC22_340n",
+                 "CC22_320a", "CC22_302", "presvote20post")]
+
+
+```
+# Clean up dataset
+## Create issue scales
+Percent of questions on each issue dimension where choose liberal view
+
+### Healthcare
+```{r}
+# Initialize to 0
+data$health <- 0
+#A: Expand Medicare
+data <- data %>%
+  mutate(health = if_else(CC22_327a == 1, health + 1, health))
+
+#B: Government negotiate lower prices
+data <- data %>%
+  mutate(health = if_else(CC22_327b == 1, health + 1, health))
+
+#C: Repeal Obamacare
+data <- data %>%
+  mutate(health = if_else(CC22_327c == 2, health + 1, health))
+
+#D: Import prescriptions
+data <- data %>%
+  mutate(health = if_else(CC22_327d == 1, health + 1, health))
+
+#Average
+data$health <- data$health / 4.0
+
+table(data$health)
+```
+
+### Gun control
+```{r}
+# Initialize to 0
+data$guns <- 0
+#A: Prohibit state from publishing gun registry
+data <- data %>%
+  mutate(guns = if_else(CC22_330a == 2, guns + 1, guns))
+
+#B: Ban assault rifles
+data <- data %>%
+  mutate(guns = if_else(CC22_330b == 1, guns + 1, guns))
+
+#C: Easier to obtain concealed-carry permit
+data <- data %>%
+  mutate(guns = if_else(CC22_330c == 2, guns + 1, guns))
+
+#D: Funding to encourage states to take guns away from self-threats
+data <- data %>%
+  mutate(guns = if_else(CC22_330d == 1, guns + 1, guns))
+
+#E: Juevenile/mental health background checks
+data <- data %>%
+  mutate(guns = if_else(CC22_330e == 1, guns + 1, guns))
+
+#F: Give teachers guns
+data <- data %>%
+  mutate(guns = if_else(CC22_330f == 2, guns + 1, guns))
+
+data$guns <- data$guns / 6
+
+table(data$guns)
+```
+
+### Immigration
+```{r}
+#Initialize to 0
+data$immigration <- 0
+
+#A: Grant legal status if job + taxes for 3+ years
+data <- data %>%
+  mutate(immigration = if_else(CC22_331a == 1, immigration + 1, immigration))
+
+#B: Increase border patrol agents
+data <- data %>%
+  mutate(immigration = if_else(CC22_331b == 2, immigration + 1, immigration))
+
+#C: Reduce by 50%
+data <- data %>%
+  mutate(immigration = if_else(CC22_331c == 2, immigration + 1, immigration))
+
+#D: Increase spending by $25 bil + wall
+data <- data %>%
+  mutate(immigration = if_else(CC22_331d == 2, immigration + 1, immigration))
+
+data$immigration <- data$immigration / 4
+table(data$immigration)
+```
+
+### Abortion
+```{r}
+#Initialize to 0
+data$abortion <- 0
+
+#A: Always allow a woman to obtain an abortion
+data <- data %>%
+  mutate(abortion = if_else(CC22_332a == 1, abortion + 1, abortion))
+
+#B: Permit only in case of rape, incest, danger to mother
+data <- data %>%
+  mutate(abortion = if_else(CC22_332b == 2, abortion + 1, abortion))
+
+#C: Prohibit after 20th week
+data <- data %>%
+  mutate(abortion = if_else(CC22_332c == 2, abortion + 1, abortion))
+
+#D: Allow employers to decline coverage
+data <- data %>%
+  mutate(abortion = if_else(CC22_332d == 2, abortion + 1, abortion))
+
+#E: Prohibit federal funding
+data <- data %>%
+  mutate(abortion = if_else(CC22_332e == 2, abortion + 1, abortion))
+
+#F: Always illegal
+data <- data %>%
+  mutate(abortion = if_else(CC22_332f == 2, abortion + 1, abortion))
+
+data$abortion <- data$abortion / 6
+
+table(data$abortion)
+```
+
+### Climate
+```{r}
+#Initialize to 0
+data$climate <- 0
+
+# From what you know about global climate change or global warming, which one of
+# the following statements comes closest to your opinion?
+# 1: Global climate change has been established as a serious problem, and
+# immediate action is necessary
+# 2: There is enough evidence that climate change is taking place and some action 
+# should be taken 
+# 3: We don't know enough about global climate change, and more research is 
+# necessary before we take any actions
+# 4: Concern about global climate change is exaggerated. No action is necessary
+# 5:  Global climate change is not occurring; this is not a real issue
+data <- data %>%
+  mutate(climate = if_else(CC22_333 %in% c(1,2), climate + 1, climate))
+
+# A: Give EPA regulatory power
+data <- data %>%
+  mutate(climate = if_else(CC22_333a == 1, climate + 1, climate))
+
+# B: Set minimum renewable energy
+data <- data %>%
+  mutate(climate = if_else(CC22_333b == 1, climate + 1, climate))
+
+# C: Strengthen Clean Energy Act
+data <- data %>%
+  mutate(climate = if_else(CC22_333c == 1, climate + 1, climate))
+
+# D: Set new fuel efficiency standards
+data <- data %>%
+  mutate(climate = if_else(CC22_333d == 1, climate + 1, climate))
+
+# E: Increase fossil fuel production
+data <- data %>%
+  mutate(climate = if_else(CC22_333e == 2, climate + 1, climate))
+
+data$climate <- data$climate / 6
+
+table(data$climate)
+```
+### Policing
+```{r}
+#Initialize to 0
+data$crime <- 0
+
+#A: Eliminate mandatory minimums
+data <- data %>%
+  mutate(crime = if_else(CC22_334a == 1, crime + 1, crime))
+
+#B: Require body cams at all times
+data <- data %>%
+  mutate(crime = if_else(CC22_334b == 1, crime + 1, crime))
+
+#C: Increase police on the street by 10%
+data <- data %>%
+  mutate(crime = if_else(CC22_334c == 2, crime + 1, crime))
+
+#D: Decrease police on the street by 10%
+data <- data %>%
+  mutate(crime = if_else(CC22_334d == 1, crime + 1, crime))
+
+#E: Ban chokeholds
+data <- data %>%
+  mutate(crime = if_else(CC22_334e == 1, crime + 1, crime))
+
+#F: Create bad cop registry
+data <- data %>%
+  mutate(crime = if_else(CC22_334f == 1, crime + 1, crime))
+
+#G: Stop giving cops surplus weapons
+data <- data %>%
+  mutate(crime = if_else(CC22_334g == 1, crime + 1, crime))
+
+#H: Allow people to sue police
+data <- data %>%
+  mutate(crime = if_else(CC22_334h == 1, crime + 1, crime))
+
+data$crime <- data$crime / 8
+
+table(data$crime)
+```
+
+### Other Important Demographics
+```{r}
+data <- data %>%
+  # Gender
+  mutate(gender = case_when(
+    gender4 == 1 ~ "Male",
+    gender4 == 2 ~ "Feale",
+    gender4 == 3 ~ "Non-binary",
+    gender4 == 4 ~ "Other"
+  )) %>%
+  # Education
+  mutate(edu = case_when(
+    educ == 1 ~ "No HS",
+    educ == 2 ~ "HS grad",
+    educ == 3 ~ "Some college",
+    educ == 4 ~ "2yr",
+    educ == 5 ~ "4yr",
+    educ == 6 ~ "Post-grad"
+  )) %>%
+  # Race
+  mutate(race = case_when(
+    race == 1 ~ "White",
+    race == 2 ~ "Black",
+    race == 3 ~ "Hispanic",
+    race == 4 ~ "Asian",
+    race == 5 ~ "Native American",
+    race == 6 ~ "Middle Eastern",
+    race == 7 ~ "Multiracial",
+    race == 8 ~ "Other"
+  )) %>%
+  # Party
+  mutate(party = case_when(
+    pid3 == 1 ~ "Democrat",
+    pid3 == 2 ~ "Republican",
+    pid3 == 3 ~ "Independent",
+    pid3 %in% c(4,5) ~ "Other"
+  ))
+
+data <- data %>%
+  # Convert presidential approval to binary
+  mutate(approval = if_else(CC22_320a %in% c(1,2), 1,0)) %>%
+  # Similar for approval of economy
+  mutate(economy = if_else(CC22_302 %in% c(1,2), 1, 0)) %>%
+  mutate(voted_D = if_else(presvote20post == 1, 1, 0))
+```
+
+# Create model
+### Limit model to relevant columns and only registered voters
+```{r}
+#colnames(data)
+data <- data[data$votereg == 1 & !is.na(data$presvote20post), 57:68]
+summary(lm(voted_D ~ approval + economy + party + edu + gender + health + guns +
+             immigration + abortion + climate + crime,
+           data = data))
+
+summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = data))
+
+```
+
+# Apply model
+Go get the values for the model
+Approval: [45](https://projects.fivethirtyeight.com/polls/approval/kamala-harris/)
+Economy: [23](https://www.pewresearch.org/politics/2024/05/23/views-of-the-nations-economy-may-2024/)
+Guns: [58](https://www.pewresearch.org/short-reads/2024/07/24/key-facts-about-americans-and-guns/)
+Abortion: [63](https://www.pewresearch.org/religion/fact-sheet/public-opinion-on-abortion/)
+Health: [84](https://www.protectourcare.org/polling-shows-that-health-care-remains-a-top-priority-for-americans/)
+Climate: [Average 78 (real), 59 (regulations), Oppose fossil fuels (66):68](https://epic.uchicago.edu/insights/2024-poll-americans-views-on-climate-change-and-policy-in-12-charts/)
+Immigration: [45](https://news.gallup.com/poll/647123/sharply-americans-curb-immigration.aspx)
+Crime: [39](https://www.pewresearch.org/politics/2024/06/06/crime-policing-and-the-2024-election/)
+
+Version 1
+```{r}
+coefficients <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = data))$coefficients[1:9]
+
+vals <- c(1, 0.45, 0.23, 0.58, 0.63, 0.84, 0.68, 0.45, 0.39)
+
+names <- c("intercept", "approval", "economy", "guns", "abortion", "health",
+           "climate", "immigration", "crime")
+
+model_24 <- as.data.frame(cbind(coefficients, vals))
+
+model_24 <- model_24 %>%
+  mutate(weighted = coefficients * vals)
+
+sum(model_24$weighted)
+```
+
+Version 2 (Do separately for Republicans and Democrats)
+Go get the values for the model
+Approval: [97, 46, 7](https://news.gallup.com/poll/652427/trump-harris-favorability-low-end-year-trend.aspx?utm_source=twitter&utm_medium=o_social&utm_term=gallup&utm_campaign=x-news-favorability_102324)
+Economy: [37, 24, 10](https://www.pewresearch.org/politics/2024/05/23/views-of-the-nations-economy-may-2024/)
+Guns: [86, 57, 28](https://www.pewresearch.org/short-reads/2024/07/24/key-facts-about-americans-and-guns/)
+Abortion: [85, 63, 41](https://www.pewresearch.org/religion/fact-sheet/public-opinion-on-abortion/)
+Health: [85, 82, 87 ](https://news.gallup.com/poll/651386/five-things-know-healthcare-election.aspx)
+Climate: Dems: 81 (93, 78, 72)
+         Ind: 66.67 (75, 59, 66)
+         Rep: 53.33 (62, 42, 54)
+[Average real, regulations,Oppose fossil fuels](https://epic.uchicago.edu/insights/2024-poll-americans-views-on-climate-change-and-policy-in-12-charts/)
+Immigration: [67, 44, 10 ](https://news.gallup.com/poll/647123/sharply-americans-curb-immigration.aspx)
+Crime: [57, 38, 19](https://www.pewresearch.org/politics/2024/06/06/crime-policing-and-the-2024-election/)
+
+```{r}
+dem_data <- data[data$party == "Democrat", ]
+ind_data <- data[data$party %in% c("Indpendent", "Other"), ]
+rep_data <- data[data$party == "Republican", ]
+
+dem_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = dem_data))$coefficients[1:9]
+
+ind_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = ind_data))$coefficients[1:9]
+
+rep_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = rep_data))$coefficients[1:9]
+
+dem_vals <- c(1, 0.97, 0.37, 0.86, 0.85, 0.85, 0.81, 0.67, 0.57)
+ind_vals <- c(1, 0.46, 0.24, 0.56, 0.63, 0.82, 0.6667, 0.44, 0.38)
+rep_vals <- c(1, 0.07, 0.24, 0.28, 0.41, 0.87, 0.5333, 0.10, 0.19)
+
+model2_24 <- as.data.frame(cbind(dem_coef, ind_coef, rep_coef, 
+                                 dem_vals, ind_vals, rep_vals))
+
+model2_24 <- model2_24 %>%
+  mutate(dem_weighted = dem_coef * dem_vals) %>%
+  mutate(ind_weighted = ind_coef * ind_vals) %>%
+  mutate(rep_weighted = rep_coef * rep_vals)
+
+(dem_sum <- sum(model2_24$dem_weighted))
+(ind_sum <- sum(model2_24$ind_weighted))
+(rep_sum <- sum(model2_24$rep_weighted))
+
+# How much weight to put on each party
+table(data$party) / 53855 * 100
+
+# Get weighted average of vote share by party * party share of demographics
+(full_vote_share <- 40.701885*dem_sum + 32.97373*ind_sum+ 26.324390*rep_sum)
+```
+
+Do state by state analysis
+```{r}
+# Make a new data table that vote_share by party, and then gives the partisan breakdown of each state
+states <- c("AZ", "GA", "MI", "NC", "NV", "PA", "WI")
+EV <- c(11, 16, 15, 16, 6, 19, 10)
+
+state_preds$EV <- as.numeric(state_preds$EV)
+
+# AZ: https://azsos.gov/elections/election-information/voter-registration-statistics 
+# GA: https://www.pewresearch.org/religious-landscape-study/database/state/georgia/party-affiliation/
+# MI: https://www.pewresearch.org/religious-landscape-study/database/state/michigan/party-affiliation/
+# NC: https://carolinademography.cpc.unc.edu/2023/09/28/who-are-north-carolinas-7-3-million-registered-voters-2023/
+# NV: https://www.nvsos.gov/sos/elections/voters/voter-registration-statistics/2012-statistics/voter-registration-statistics-total-october-2012
+# PA: https://www.newsweek.com/democrats-see-103-percent-increase-pennsylvania-voters-leaving-party-1970300 
+# WI: https://www.pewresearch.org/religious-landscape-study/database/state/wisconsin/party-affiliation/
+
+state_dems <- c(29, 41, 47, 33, 42.34, 43.81, 42)
+state_inds <- c(35.23, 18, 34, 31, 24.01, 15.84, 16)
+state_reps <- c(35.77, 41, 18, 36, 33.65, 40.34, 42)
+
+state_preds <- as.data.frame(cbind(states, EV, state_dems, state_inds, state_reps))
+
+state_preds$EV <- as.numeric(state_preds$EV)
+state_preds$state_dems <- as.numeric(state_preds$state_dems)
+state_preds$state_inds <- as.numeric(state_preds$state_inds)
+state_preds$state_reps <- as.numeric(state_preds$state_reps)
+
+state_preds <- state_preds %>%
+  mutate(vote_share = state_dems * dem_sum + state_inds * ind_sum + 
+           state_reps * rep_sum)
+
+# From non tossups
+# Democrats have 226 electoral votes
+# Win Michigan (15) and Nevada (6)
+state_preds
+# Democrats end up with 247
+```
