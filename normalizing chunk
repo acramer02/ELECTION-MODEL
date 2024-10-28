@@ -1,0 +1,49 @@
+```{r}
+dem_data <- data[data$party == "Democrat", ]
+ind_data <- data[data$party %in% c("Indpendent", "Other"), ]
+rep_data <- data[data$party == "Republican", ]
+
+dem_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = dem_data))$coefficients[1:9]
+
+ind_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = ind_data))$coefficients[1:9]
+
+rep_coef <- summary(lm(voted_D ~ approval + economy + guns + abortion + health +
+             climate + immigration + crime,
+           data = rep_data))$coefficients[1:9]
+
+# Normalize to 0
+dem_coef[2:9] <- dem_coef[2:9] + dem_coef[1]
+dem_coef[2:9] <- dem_coef[2:9] / sum(dem_coef[2:9])
+
+ind_coef[2:9] <- ind_coef[2:9] + abs(ind_coef[1])
+ind_coef[2:9] <- ind_coef[2:9] / sum(ind_coef[2:9])
+
+rep_coef[2:9] <- rep_coef[2:9] + abs(rep_coef[1])
+rep_coef[2:9] <- rep_coef[2:9] / sum(rep_coef[2:9])
+
+dem_vals <- c(NA, 0.97, 0.37, 0.86, 0.85, 0.85, 0.81, 0.67, 0.57)
+ind_vals <- c(NA, 0.46, 0.24, 0.56, 0.63, 0.82, 0.6667, 0.44, 0.38)
+rep_vals <- c(NA, 0.07, 0.24, 0.28, 0.41, 0.87, 0.5333, 0.10, 0.19)
+
+model2_24 <- as.data.frame(cbind(dem_coef, ind_coef, rep_coef, 
+                                 dem_vals, ind_vals, rep_vals))
+
+model2_24 <- model2_24 %>%
+  mutate(dem_weighted = dem_coef * dem_vals) %>%
+  mutate(ind_weighted = ind_coef * ind_vals) %>%
+  mutate(rep_weighted = rep_coef * rep_vals)
+
+(dem_sum <- sum(model2_24$dem_weighted[2:9]))
+(ind_sum <- sum(model2_24$ind_weighted[2:9]))
+(rep_sum <- sum(model2_24$rep_weighted[2:9]))
+
+# How much weight to put on each party
+table(data$party) / 53855 * 100
+
+# Get weighted average of vote share by party * party share of demographics
+(full_vote_share <- 40.701885*dem_sum + 32.97373*ind_sum+ 26.324390*rep_sum)
+```
